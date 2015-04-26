@@ -243,10 +243,6 @@ class MongoProvider implements DataProvider {
     return sel;
   }
 
-//  Future<bool> _clientVersionExists(String clientVersion) =>
-//      _collectionHistory.find(where.eq('clientVersion', clientVersion).limit(1)).toList()
-//      .then((data) => !data.isEmpty);
-
   /**
    * Returns data and version of this data.
    */
@@ -255,8 +251,6 @@ class MongoProvider implements DataProvider {
     SelectorBuilder selector = createSelector(_rawSelector, __fields, _excludeFields)
                                .limit(_limit);
     return collection.find(selector).toList().then((data) {
-      // TODO _data should also return version!
-      //return _maxVersion.then((version) => {'data': data, 'version': version});
       var version = data.length == 0 ? 0 : data.map((item) => item['__clean_version']).reduce(max);
       if(stripVersion) _stripCleanVersion(data);
       assert(version != null);
@@ -269,80 +263,9 @@ class MongoProvider implements DataProvider {
     });
   }
 
-
-//  Future addAll(List<Map> data, String author) {
-//    num nextVersion;
-//    return _get_locks().then((_) => _maxVersion).then((version) {
-//        nextVersion = version + 1;
-//        data.forEach((elem) => elem[VERSION_FIELD_NAME] = nextVersion++);
-//        return collection.insertAll(data);
-//      }).then((_) =>
-//        _collectionHistory.insertAll(data.map((elem) =>
-//            {
-//              "before" : {},
-//              "after" : elem,
-//              "action" : "add",
-//              "author" : author,
-//              "version" : elem[VERSION_FIELD_NAME],
-//            }).toList(growable: false)),
-//      onError: (e,s) {
-//        // Errors thrown by MongoDatabase are Map objects with fields err, code,
-//        // ...
-//        return _release_locks().then((_) {
-//          throw new MongoException(e,s);
-//        });
-//      }
-//      ).then((_) => _release_locks()).then((_) => nextVersion);
-//  }
-
-//  Future deprecatedChange(String _id, Map change, String author) {
-//    num nextVersion;
-//    Map newRecord;
-//    return _get_locks().then((_) => collection.findOne({"_id" : _id}))
-//      .then((Map record) {
-//        if(record == null) {
-//          throw new MongoException(null,null,
-//              'Change was not applied, document with id $_id does not exist.');
-//        } else if (change.containsKey('_id') && change['_id'] != _id) {
-//          throw new MongoException(null,null,
-//              'New document id ${change['_id']} should be same as old one $_id.');
-//        } else {
-//          return _maxVersion.then((version) {
-//            nextVersion = version + 1;
-//            newRecord = new Map.from(record);
-//            newRecord.addAll(change);
-//            newRecord[VERSION_FIELD_NAME] = nextVersion;
-//            return collection.save(newRecord);
-//          }).then((_) =>
-//            _collectionHistory.insert({
-//              "before" : record,
-//              "after" : newRecord,
-//              "action" : "change",
-//              "author" : author,
-//              "version" : nextVersion
-//            }));
-//        }
-//      },
-//      onError: (e, s) {
-//        // Errors thrown by MongoDatabase are Map objects with fields err, code,
-//        // ...
-//        return _release_locks().then((_) {
-//          throw new MongoException(e, s);
-//        });
-//      }
-//      ).then((_) => _release_locks()).then((_) => nextVersion);
-//  }
-
   Future writeOperation(String _id, String author, String action, Map newData) {
     num nextVersion;
     return _get_locks()
-//      .then((_){
-//          if (clientVersion != null) {
-//            return _clientVersionExists(clientVersion).then((exists) {
-//              if (exists) throw true;
-//            });
-//          }
-//      })
       .then((_) => collection.findOne({"_id" : _id}))
       .then((Map oldData) {
 
@@ -404,164 +327,6 @@ class MongoProvider implements DataProvider {
   Future remove(String _id, String author) {
     return writeOperation(_id, author, 'remove', {});
   }
-
-//  Future changeJson(String _id, jsonData, String author, {clientVersion: null, upsert: false}) {
-//    num nextVersion;
-//    return _get_locks()
-//      .then((_){
-//          if (clientVersion != null) {
-//            return _clientVersionExists(clientVersion).then((exists) {
-//              if (exists) throw true;
-//            });
-//          }
-//      })
-//      .then((_) => collection.findOne({"_id" : _id}))
-//      .then((Map oldData) {
-//        if (oldData == null) oldData = {};
-//        var newData = useful.clone(oldData);
-//
-//        var action;
-//        if(jsonData is List) {
-//          if(jsonData[0] == CLEAN_UNDEFINED){
-//            action = 'add';
-//          }
-//          else if(jsonData[1] == CLEAN_UNDEFINED){
-//            action = 'remove';
-//            newData = {};
-//          }
-//          else actapplyJSONion = 'change';
-//
-//          if(jsonData[1] != CLEAN_UNDEFINED) {
-//            newData = jsonData[1];
-//          }
-//        }
-//        else  {
-//          applyJSON(jsonData, newData);
-//          action = 'change';
-//        }
-//
-//        // check that current db state is consistent with required action
-//        var inferredAction;
-//        if (oldData.isNotEmpty && newData.isEmpty) inferredAction = 'remove';
-//        else if (oldData.isEmpty && newData.isNotEmpty) inferredAction = 'add';
-//        else if (oldData.isNotEmpty && newData.isNotEmpty) inferredAction = 'change';
-//
-//        if (action != inferredAction) {
-//          if (!(action == 'change' &&
-//                inferredAction == 'add' &&
-//                upsert == true))
-//            throw true;
-//        }
-//
-//        if (!newData.isEmpty && newData['_id'] != _id) {
-//          throw new MongoException(null,null,
-//              'New document id ${newData['_id']} should be same as old one $_id.');
-//        } else {
-//          return _maxVersion.then((version) {
-//            nextVersion = version + 1;
-//            if (inferredAction == 'remove' ){
-//              return collection.remove({'_id': _id});
-//            } else {
-//              newData[VERSION_FIELD_NAME] = nextVersion;
-//              if (inferredAction == 'add') {
-//                return collection.insert(newData);
-//              } else {
-//                return collection.save(newData);
-//              }
-//            }
-//          }).then((_) =>
-//            _collectionHistory.insert({
-//              "before" : oldData,
-//              "after" : newData,
-//              "action" : inferredAction,
-//              "author" : author,
-//              "version" : nextVersion
-//            }));
-//        }
-//      }).then((_) => _release_locks()).then((_) => nextVersion)
-//      .catchError((e) => _release_locks().then((_) {
-//        if (e is! Exception){
-//          return e;
-//        } else {
-//          throw e;
-//        }
-//      }));
-//  }
-
-//  Future update(selector, Map modifier(Map document), String author) {
-//    num nextVersion;
-//    List oldData;
-//    return _get_locks().then((_) => _maxVersion).then((version) {
-//        nextVersion = version + 1;
-//        num versionUpdate = nextVersion;
-//
-//        Map prepare(Map document) {
-//          try {
-//            modifier(document);
-//          } catch(e,s) {
-//            throw new ModifierException(e,s);
-//          }
-//          document[VERSION_FIELD_NAME] = versionUpdate++;
-//          return document;
-//        }
-//
-//        var col = collection.find(selector);
-//        return col.toList().then((data) {
-//          oldData = clone(data);
-//          return Future.forEach(data,
-//              (item) => collection.update({'_id': item['_id']},
-//                  prepare(item))
-//              );
-//        });
-//      }).then((_) {
-//        return Future.forEach(oldData,
-//          (oldItem) {
-//            return collection.find({'_id': oldItem['_id']}).toList().then((newItem) =>
-//            _collectionHistory.insert({
-//              "before" : oldItem,
-//              "after" : newItem.single,
-//              "action" : "change",
-//              "author" : author,
-//              "version" : nextVersion++
-//            }));
-//          });
-//        }).then((_) => _release_locks()).then((_) => nextVersion)
-//        .catchError( (e,s ) {
-//          // Errors thrown by MongoDatabase are Map objects with fields err, code,
-//          // ...
-//          logger.shout('error:', e, s);
-//          return _release_locks().then((_) {
-//            if (e is ModifierException) {
-//              throw e;
-//            } else throw new MongoException(e,s);
-//          });
-//        });
-//  }
-//
-//  Future removeAll(query, String author) {
-//    num nextVersion;
-//    return _get_locks().then((_) => _maxVersion).then((version) {
-//        nextVersion = version + 1;
-//        return collection.find(query).toList();
-//      }).then((data) {
-//        return collection.remove(query).then((_) =>
-//          _collectionHistory.insertAll(data.map((elem) => {
-//            "before" : elem,
-//            "after" : {},
-//            "action" : "remove",
-//            "author" : author,
-//            "version" : nextVersion++
-//        }).toList(growable: false)));
-//      },
-//      onError: (e,s) {
-//        // Errors thrown by MongoDatabase are Map objects with fields err, code,
-//        // ...
-//        return _release_locks().then((_) {
-//          throw new MongoException(e,s);
-//        });
-//      }
-//      ).then((_) => _release_locks()).then((_) => nextVersion);
-//  }
 
   Future<Map> diffFromVersion(num version, {Map highestElement: null, num collectionLength : 0}) {
     return _maxVersion.then((maxVer) {
@@ -815,7 +580,6 @@ class MongoProvider implements DataProvider {
     beforeOrAfter.forEach((record) {
       version = record["version"];
       if (record["action"] == "add") {
-        logger.info("ACTION ADD");
         if (afterLeqPivot(record)) {
           collectionLength++;
           diff.add(add(record));
@@ -825,7 +589,6 @@ class MongoProvider implements DataProvider {
         }
       }
       else if (record["action"] == "remove") {
-        logger.info("ACTION REMOVE");
         if (beforeLeqPivot(record)) {
           collectionLength--;
           diff.add(remove(record));
@@ -835,7 +598,6 @@ class MongoProvider implements DataProvider {
         }
       }
       else if (record["action"] == "change") {
-        logger.info("ACTION CHANGE");
         if (beforeLeqPivot(record) && afterLeqPivot(record)) {
           diff.add(change(record));
         }
