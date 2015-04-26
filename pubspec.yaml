@@ -1,0 +1,18 @@
+name: sync
+version: 0.0.1
+description: A minimal command-line application.
+author: Igor Liska <liska.igor4@gmail.com>
+#homepage: https://www.example.com
+environment:
+  sdk: '>=1.0.0 <2.0.0'
+dependencies:
+  mongo_dart: '>=0.1.36 <0.2.0'
+  logging: '>=0.9.0 <0.10.0'
+  browser: '>=0.9.0 <0.11.0'
+  clean_data: '>=0.4.9 <0.5.0'
+  shelf: '>=0.6.1 <0.7.0'
+  shelf_static: '>=0.2.2 <0.3.0'
+  shelf_route: '>=0.12.0 < 0.13.0'
+  shelf_web_socket: '>=0.0.1 <0.1.0'
+dev_dependencies:
+  unittest: any

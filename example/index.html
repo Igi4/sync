@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>test</title>
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <h1>test</h1>
+    
+    Name: <input type="text" id="name" />
+    Age: <input type="text" id="age" />
+    <button id="send">add</button>
+    
+    <table width="960">
+      <thead>
+        <th>Persons (data)</th>
+        <th>Persons (diff)</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td><ul id="list-data"></ul></td>
+          <td><ul id="list-diff"></ul></td>
+        </tr>
+      </tbody>
+      <thead>
+        <th>Persons 25+ (data)</th>
+        <th>Persons 25+ (diff)</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td><ul id="list24-data"></ul></td>
+          <td><ul id="list24-diff"></ul></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <script type="application/dart" src="client.dart"></script>
+    <script src="packages/browser/dart.js"></script>
+  </body>
+</html>
