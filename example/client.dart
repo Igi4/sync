@@ -1,8 +1,11 @@
 import 'package:sync/client.dart';
-import 'package:sync/common.dart';
 import "package:clean_data/clean_data.dart";
-import 'dart:async';
 import 'dart:html';
+
+/**
+ * How to run this file: run dartium and follow this link:
+ * http://0.0.0.0:8080/static/ (providing the sync server is already running)
+ */
 
 LIElement createListElement(person, persons) {
   TextInputElement name = new TextInputElement()

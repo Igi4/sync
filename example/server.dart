@@ -22,28 +22,8 @@ void main() {
     });
 
     publish('personsOlderThan24Desc', (_) {
-      return mongodb.collection("persons").find({"age" : {'\$gt' : 24}}).sort({"age": ASC}).limit(3);
+      return mongodb.collection("persons").find({"age" : {'\$gt' : 24}}).sort({"age": DESC}).limit(3);
     });
-
-//    PUBLISHER.handleSyncRequest({
-//      'action': 'get_data',
-//      'collection': 'persons'
-//    }).then((data) {
-//
-//      logger.info(data);
-//
-//      PUBLISHER.handleSyncRequest({
-//        'action': 'get_diff',
-//        'collection': 'persons',
-//        'version': 2
-//      }).then((result) {
-//
-//        logger.info(result);
-//
-//        //mongodb.close();
-//      });
-//
-//    }).catchError((e) => logger.warning(e));
 
     Backend.bind('0.0.0.0', 8080, '/home/igi/dart/sync/example').then((backend) {
       logger.info('Backend started');
